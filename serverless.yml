@@ -1,0 +1,35 @@
+service: node-grocery-messenger-bot
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  region: eu-central-1
+  stage: ${self:custom.vars.stage, "dev"}
+  logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
+
+  environment:
+    FB_APPLICATION_SECRET: ${env:FB_APPLICATION_SECRET}
+    FB_VERIFICATION_TOKEN: ${env:FB_VERIFICATION_TOKEN}
+    IS_LAMBDA: "1"
+    API_URL: ${env:API_URL}
+
+functions:
+  app:
+    handler: dist.handler
+    events:
+      - http: ANY /
+      - http: "ANY {proxy+}"
+
+package:
+  include:
+    - dist/**
+    - node_modules/**
+    - .env
+    - .env.example
+    - .env.development
+    - .env.production
+  exclude:
+    - ./**
+
+custom:
+  vars: ${file(./sls-config.js)}
